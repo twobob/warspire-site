@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Damage calculator | Warspire Wiki</title>
+<meta name="description" content="Damage after armour and magic resistance.">
+<link rel="preload" href="../fonts/Warspire-Bold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="wiki.css?v=202611160312">
+</head>
+<body data-root="" data-path="tools-damage-calculator">
+<header class="bar">
+  <a class="mark" href="../index.html" title="Warspire home">WARSPIRE</a>
+  <a class="wiki-mark" href="index.html">Wiki</a>
+  <form class="search" role="search" onsubmit="return false">
+    <input id="q" type="search" placeholder="Search units, items, rules" autocomplete="off" aria-label="Search the wiki">
+    <div id="results" class="results" hidden></div>
+  </form>
+  <a class="btn small" href="https://xn--1xap.com/WebRelease/">Play</a>
+  <button class="menu" id="menu" type="button" aria-expanded="false" aria-controls="sections">Sections</button>
+</header>
+<nav class="sections" id="sections" aria-label="Wiki sections"><a href="units.html">Units</a><a href="commanders.html">Commanders</a><a href="alliances.html">Alliances</a><a href="abilities.html">Abilities</a><a href="items.html">Items</a><a href="talents.html">Talents</a><a href="effects.html">Effects</a><a href="arenas.html">Arenas</a><a href="rules.html">Rules</a><a href="guides.html">Guides</a><a href="tools.html" aria-current="page">Tools</a></nav>
+<main class="page kind-page">
+  <nav class="crumbs" aria-label="Breadcrumb"><a href="index.html">Wiki</a><span class="sep">/</span><a href="tools.html">Tables and calculators</a></nav>
+  <article>
+    <header class="title"><h1>Damage calculator</h1><p class="summary">Damage after armour and magic resistance.</p></header>
+    
+    <p>Work out what a hit does after <a href="rules-damage.html#armour">armour</a>, <a href="rules-damage.html#magic-resistance">magic resistance</a> and <a href="rules-damage.html#damage-reduction">damage reduction</a>. Type your own numbers, or pick real units or <a href="commanders.html">commanders</a> to fill the fields with their stats at a star or a player level. Picking one only fills the fields: you can still change any of them, for example to add the armour of an item.</p>
+<div class="calc" id="damage-calc">
+  <label>Attacker (optional)<select id="dc-attacker"><option value="">Type your own damage</option></select></label>
+  <label>Attacker stars or level<select id="dc-attacker-star"></select></label>
+  <label>Damage before defences<input id="dc-damage" type="number" value="100" min="0" step="any"></label>
+  <label>Damage type<select id="dc-type"><option value="physical">Physical</option><option value="magical">Magical</option><option value="pure">Pure</option></select></label>
+  <label>Seconds into the fight<input id="dc-seconds" type="number" value="0" min="0" max="45" step="any"></label>
+  <label>Target (optional)<select id="dc-target"><option value="">Type your own defences</option></select></label>
+  <label>Target stars or level<select id="dc-target-star"></select></label>
+  <label>Target armour<input id="dc-armour" type="number" value="5" step="any"></label>
+  <label>Target magic resistance<input id="dc-resist" type="number" value="0" step="any"></label>
+  <label>Target damage reduction %<input id="dc-reduction" type="number" value="0" step="any"></label>
+  <label>Target health<input id="dc-health" type="number" value="1000" min="0" step="any"></label>
+  <label>Overtime damage bonus<output id="dc-overtime">none</output></label>
+  <label>Damage after defences<output id="dc-after">0</output></label>
+  <label>Change<output id="dc-reduced">0%</output></label>
+  <label>Hits to kill<output id="dc-hits">0</output></label>
+</div>
+<p class="muted"><span id="dc-attacker-note"></span> <span id="dc-target-note"></span> <span id="dc-detail"></span></p>
+<noscript><p>The calculator needs scripts switched on. The tables on the damage rules page give the same numbers.</p></noscript>
+<script>
+(function () {
+  var K = {"armorFactor":0.052,"armorBase":0.9,"armorAbsFactor":0.048,"overtime":{"startSeconds":35,"stepSeconds":1,"damageAmpPctPerStep":15,"damageAmpBias":1,"maxDamageAmpPct":150}};
+  var UNITS = [{"i":"unit:abyssal_archon","p":"units-abyssal_archon","n":"Abyssal Archon","t":5,"c":0,"h":[1350,2700,5400],"a":[5,5,5],"m":[0,0,0],"lo":[65,130,260],"hi":[75,150,300]},{"i":"unit:ashen_abbess","p":"units-ashen_abbess","n":"Ashen Abbess","t":3,"c":0,"h":[1125,2250,5400],"a":[10,10,10],"m":[0,0,0],"lo":[45,90,216],"hi":[55,110,264]},{"i":"unit:ashen_pilgrim","p":"units-ashen_pilgrim","n":"Ashen Pilgrim","t":1,"c":0,"h":[1000,2000,4000],"a":[10,10,10],"m":[0,0,0],"lo":[45,90,180],"hi":[55,110,220]},{"i":"unit:ashwalker","p":"units-ashwalker","n":"Ashwalker","t":3,"c":0,"h":[975,1950,4680],"a":[5,5,5],"m":[30,30,30],"lo":[45,90,216],"hi":[65,130,312]},{"i":"unit:banner_squire","p":"units-banner_squire","n":"Banner Squire","t":2,"c":0,"h":[900,1800,3600],"a":[5,5,5],"m":[0,0,0],"lo":[50,100,200],"hi":[60,120,240]},{"i":"unit:bearclaw_wilder","p":"units-bearclaw_wilder","n":"Bearclaw Wilder","t":4,"c":0,"h":[1200,2400,4800],"a":[0,0,0],"m":[20,20,20],"lo":[50,100,200],"hi":[60,120,240]},{"i":"unit:blastcap_sapper","p":"units-blastcap_sapper","n":"Blastcap Sapper","t":4,"c":0,"h":[1100,2200,4400],"a":[5,5,5],"m":[0,0,0],"lo":[50,100,200],"hi":[60,120,240]},{"i":"unit:blood_matriarch","p":"units-blood_matriarch","n":"Blood Matriarch","t":5,"c":0,"h":[1500,3000,6000],"a":[10,10,10],"m":[0,0,0],"lo":[90,180,360],"hi":[110,220,440]},{"i":"unit:bog_hexer","p":"units-bog_hexer","n":"Bog Hexer","t":1,"c":0,"h":[975,1950,3900],"a":[0,0,0],"m":[0,0,0],"lo":[40,80,160],"hi":[60,120,240]},{"i":"unit:bramble_golem","p":"units-bramble_golem","n":"Bramble Golem","t":2,"c":0,"h":[650,1200,2400],"a":[5,5,5],"m":[0,0,0],"lo":[30,50,90],"hi":[50,70,110]},{"i":"unit:briar_shaper","p":"units-briar_shaper","n":"Briar Shaper","t":3,"c":0,"h":[800,1600,3840],"a":[2,2,2],"m":[0,0,0],"lo":[55,110,264],"hi":[65,130,312]},{"i":"unit:brood_hatchling","p":"units-brood_hatchling","n":"Brood Hatchling","t":4,"c":0,"h":[300,450,650],"a":[2,2,2],"m":[0,0,0],"lo":[30,45,70],"hi":[40,55,80]},{"i":"unit:brood_queen","p":"units-brood_queen","n":"Brood Queen","t":4,"c":0,"h":[1100,2200,4400],"a":[3,3,3],"m":[0,0,0],"lo":[70,140,280],"hi":[80,160,320]},{"i":"unit:carrion_wing","p":"units-carrion_wing","n":"Carrion Wing","t":2,"c":0,"h":[2000,2000,2000],"a":[5,5,5],"m":[0,0,0],"lo":[100,100,100],"hi":[160,160,160]},{"i":"unit:chainwarden","p":"units-chainwarden","n":"Chainwarden","t":2,"c":0,"h":[1650,3300,6600],"a":[10,10,10],"m":[0,0,0],"lo":[45,90,180],"hi":[55,110,220]},{"i":"unit:cinder_hatchmother","p":"units-cinder_hatchmother","n":"Cinder Hatchmother","t":3,"c":0,"h":[1300,2600,6240],"a":[5,5,5],"m":[0,0,0],"lo":[50,100,240],"hi":[70,140,336]},{"i":"unit:cinder_mite","p":"units-cinder_mite","n":"Cinder Mite","t":3,"c":0,"h":[200,300,450],"a":[0,0,0],"m":[0,0,0],"lo":[20,30,50],"hi":[25,40,60]},{"i":"unit:cinder_wyrmrider","p":"units-cinder_wyrmrider","n":"Cinder Wyrmrider","t":5,"c":0,"h":[1400,2800,5600],"a":[10,10,10],"m":[0,0,0],"lo":[55,110,220],"hi":[75,150,300]},{"i":"unit:clockwork_savant","p":"units-clockwork_savant","n":"Clockwork Savant","t":3,"c":0,"h":[1125,2250,5400],"a":[5,5,5],"m":[0,0,0],"lo":[60,120,288],"hi":[72,144,346]},{"i":"unit:cog_sapper","p":"units-cog_sapper","n":"Cog Sapper","t":2,"c":0,"h":[1350,2700,5400],"a":[8,8,8],"m":[0,0,0],"lo":[50,100,200],"hi":[60,120,240]},{"i":"unit:deep_basilisk","p":"units-deep_basilisk","n":"Deep Basilisk","t":5,"c":0,"h":[1275,2550,5100],"a":[5,5,5],"m":[10,10,10],"lo":[75,150,300],"hi":[80,160,320]},{"i":"unit:dire_wolf","p":"units-dire_wolf","n":"Dire Wolf","t":3,"c":0,"h":[450,750,1275],"a":[5,5,5],"m":[0,0,0],"lo":[80,130,215],"hi":[100,150,240]},{"i":"unit:drowned_behemoth","p":"units-drowned_behemoth","n":"Drowned Behemoth","t":4,"c":0,"h":[1650,3300,6600],"a":[10,10,10],"m":[0,0,0],"lo":[60,120,240],"hi":[70,140,280]},{"i":"unit:drowned_pikeman","p":"units-drowned_pikeman","n":"Drowned Pikeman","t":1,"c":0,"h":[900,1800,3600],"a":[5,5,5],"m":[0,0,0],"lo":[60,120,240],"hi":[85,170,340]},{"i":"unit:drowned_wailer","p":"units-drowned_wailer","n":"Drowned Wailer","t":2,"c":0,"h":[825,1650,3300],"a":[5,5,5],"m":[0,0,0],"lo":[55,110,220],"hi":[60,120,240]},{"i":"unit:duskguard","p":"units-duskguard","n":"Duskguard","t":4,"c":0,"h":[1425,2850,5700],"a":[5,5,5],"m":[0,0,0],"lo":[110,220,440],"hi":[130,260,520]},{"i":"unit:duskmother","p":"units-duskmother","n":"Duskmother","t":5,"c":0,"h":[1500,3000,6000],"a":[5,5,5],"m":[0,0,0],"lo":[120,240,480],"hi":[140,280,560]},{"i":"unit:elder_thornwyrm","p":"units-elder_thornwyrm","n":"Elder Thornwyrm","t":3,"c":0,"h":[2600,2600,2600],"a":[10,10,10],"m":[0,0,0],"lo":[160,160,160],"hi":[220,220,220]},{"i":"unit:ember_duelist","p":"units-ember_duelist","n":"Ember Duelist","t":3,"c":0,"h":[825,1650,3960],"a":[5,5,5],"m":[0,0,0],"lo":[80,160,384],"hi":[100,200,480]},{"i":"unit:fen_mystic","p":"units-fen_mystic","n":"Fen Mystic","t":3,"c":0,"h":[850,1700,4080],"a":[5,5,5],"m":[0,0,0],"lo":[50,100,240],"hi":[60,120,288]},{"i":"unit:gargoyle_gunner","p":"units-gargoyle_gunner","n":"Gargoyle Gunner","t":1,"c":0,"h":[950,1900,3800],"a":[5,5,5],"m":[0,0,0],"lo":[50,100,200],"hi":[60,120,240]},{"i":"unit:gate_duelist","p":"units-gate_duelist","n":"Gate Duelist","t":2,"c":0,"h":[950,1900,3800],"a":[5,5,5],"m":[0,0,0],"lo":[60,120,240],"hi":[75,150,300]},{"i":"unit:gnawing_wight","p":"units-gnawing_wight","n":"Gnawing Wight","t":3,"c":0,"h":[1000,2000,4800],"a":[5,5,5],"m":[0,0,0],"lo":[55,110,264],"hi":[60,120,288]},{"i":"unit:grave_archer","p":"units-grave_archer","n":"Grave Archer","t":1,"c":0,"h":[600,1200,2400],"a":[5,5,5],"m":[0,0,0],"lo":[50,100,200],"hi":[56,112,224]},{"i":"unit:grave_shambler","p":"units-grave_shambler","n":"Grave Shambler","t":5,"c":0,"h":[400,700,950],"a":[5,5,5],"m":[0,0,0],"lo":[50,100,150],"hi":[80,130,160]},{"i":"unit:rift_echo_greater","p":"units-rift_echo_greater","n":"Greater Rift Echo","t":2,"c":0,"h":[900,900,900],"a":[8,8,8],"m":[0,0,0],"lo":[80,80,80],"hi":[120,120,120]},{"i":"unit:grey_confessor","p":"units-grey_confessor","n":"Grey Confessor","t":4,"c":0,"h":[1300,2600,5200],"a":[10,10,10],"m":[0,0,0],"lo":[60,120,240],"hi":[70,140,280]},{"i":"unit:gutter_scavenger","p":"units-gutter_scavenger","n":"Gutter Scavenger","t":1,"c":0,"h":[1100,2200,4400],"a":[5,5,5],"m":[0,0,0],"lo":[50,100,200],"hi":[60,120,240]},{"i":"unit:hellblade_reaver","p":"units-hellblade_reaver","n":"Hellblade Reaver","t":2,"c":0,"h":[1125,2250,4500],"a":[5,5,5],"m":[0,0,0],"lo":[55,110,220],"hi":[130,260,520]},{"i":"unit:hive_skulker","p":"units-hive_skulker","n":"Hive Skulker","t":1,"c":0,"h":[550,1100,2200],"a":[3,3,3],"m":[0,0,0],"lo":[45,90,180],"hi":[55,110,220]},{"i":"unit:hollow_singer","p":"units-hollow_singer","n":"Hollow Singer","t":3,"c":0,"h":[900,1800,4320],"a":[5,5,5],"m":[40,40,40],"lo":[35,70,168],"hi":[50,100,240]},{"i":"unit:hollow_strider","p":"units-hollow_strider","n":"Hollow Strider","t":4,"c":0,"h":[1275,2550,5100],"a":[5,5,5],"m":[0,0,0],"lo":[70,140,280],"hi":[80,160,320]},{"i":"unit:hourblade","p":"units-hourblade","n":"Hourblade","t":5,"c":0,"h":[1500,3000,6000],"a":[5,5,5],"m":[0,0,0],"lo":[140,280,560],"hi":[170,340,680]},{"i":"unit:jade_drakeling","p":"units-jade_drakeling","n":"Jade Drakeling","t":2,"c":0,"h":[750,1500,3000],"a":[0,0,0],"m":[0,0,0],"lo":[50,100,200],"hi":[60,120,240]},{"i":"unit:marsh_hag","p":"units-marsh_hag","n":"Marsh Hag","t":2,"c":0,"h":[825,1650,3300],"a":[5,5,5],"m":[0,0,0],"lo":[40,80,160],"hi":[50,100,200]},{"i":"unit:mending_totem","p":"units-mending_totem","n":"Mending Totem","t":4,"c":0,"h":[500,500,500],"a":[0,0,0],"m":[0,0,0],"lo":[1,1,1],"hi":[1,1,1]},{"i":"unit:mire_king","p":"units-mire_king","n":"Mire King","t":5,"c":0,"h":[1500,3000,6000],"a":[5,5,5],"m":[0,0,0],"lo":[180,360,720],"hi":[200,400,800]},{"i":"unit:mire_skirmisher","p":"units-mire_skirmisher","n":"Mire Skirmisher","t":1,"c":0,"h":[750,1500,3000],"a":[5,5,5],"m":[0,0,0],"lo":[40,80,160],"hi":[55,110,220]},{"i":"unit:mire_ward","p":"units-mire_ward","n":"Mire Ward","t":3,"c":0,"h":[360,480,600],"a":[0,0,0],"m":[50,50,50],"lo":[45,60,75],"hi":[60,75,90]},{"i":"unit:moonless_alpha","p":"units-moonless_alpha","n":"Moonless Alpha","t":3,"c":0,"h":[1125,2250,5400],"a":[5,5,5],"m":[0,0,0],"lo":[50,100,240],"hi":[60,120,288]},{"i":"unit:night_sentinel","p":"units-night_sentinel","n":"Night Sentinel","t":2,"c":0,"h":[750,1500,3000],"a":[5,5,5],"m":[0,0,0],"lo":[60,120,240],"hi":[70,140,280]},{"i":"unit:oath_cutter","p":"units-oath_cutter","n":"Oath Cutter","t":1,"c":0,"h":[825,1650,3300],"a":[5,5,5],"m":[0,0,0],"lo":[50,100,200],"hi":[70,140,280]},{"i":"unit:oathkeeper_thane","p":"units-oathkeeper_thane","n":"Oathkeeper Thane","t":2,"c":0,"h":[1200,2400,4800],"a":[5,5,5],"m":[0,0,0],"lo":[55,110,220],"hi":[65,130,260]},{"i":"unit:pack_warden","p":"units-pack_warden","n":"Pack Warden","t":3,"c":0,"h":[1000,2000,4800],"a":[5,5,5],"m":[0,0,0],"lo":[70,140,336],"hi":[80,160,384]},{"i":"unit:pact_archer","p":"units-pact_archer","n":"Pact Archer","t":3,"c":0,"h":[375,525,675],"a":[4,4,4],"m":[0,0,0],"lo":[48,60,72],"hi":[54,66,78]},{"i":"unit:pact_bruiser","p":"units-pact_bruiser","n":"Pact Bruiser","t":3,"c":0,"h":[750,1050,1350],"a":[8,8,8],"m":[0,0,0],"lo":[90,120,150],"hi":[90,120,150]},{"i":"unit:pact_golem","p":"units-pact_golem","n":"Pit Golem","t":3,"c":0,"h":[2250,3000,3750],"a":[0,0,0],"m":[0,0,0],"lo":[240,270,295],"hi":[280,310,330]},{"i":"unit:pit_imp","p":"units-pit_imp","n":"Pit Imp","t":1,"c":0,"h":[900,1800,3600],"a":[5,5,5],"m":[0,0,0],"lo":[45,90,180],"hi":[65,130,260]},{"i":"unit:pit_marshal","p":"units-pit_marshal","n":"Pit Marshal","t":4,"c":0,"h":[1575,3150,6300],"a":[15,15,15],"m":[0,0,0],"lo":[110,220,440],"hi":[120,240,480]},{"i":"unit:plague_cantor","p":"units-plague_cantor","n":"Plague Cantor","t":4,"c":0,"h":[1275,2550,5100],"a":[5,5,5],"m":[0,0,0],"lo":[50,100,200],"hi":[60,120,240]},{"i":"unit:quillback","p":"units-quillback","n":"Quillback","t":2,"c":0,"h":[1350,2700,5400],"a":[5,5,5],"m":[0,0,0],"lo":[100,200,400],"hi":[130,260,520]},{"i":"unit:grave_marker","p":"units-grave_marker","n":"Restless Gravestone","t":5,"c":0,"h":[3000,3000,3000],"a":[10,10,10],"m":[0,0,0],"lo":[1,1,1],"hi":[1,1,1]},{"i":"unit:rift_echo","p":"units-rift_echo","n":"Rift Echo","t":1,"c":0,"h":[450,450,450],"a":[3,3,3],"m":[0,0,0],"lo":[40,40,40],"hi":[60,60,60]},{"i":"unit:rift_mote","p":"units-rift_mote","n":"Rift Mote","t":1,"c":0,"h":[750,1500,3000],"a":[5,5,5],"m":[0,0,0],"lo":[40,80,160],"hi":[50,100,200]},{"i":"unit:riftlance_duelist","p":"units-riftlance_duelist","n":"Riftlance Duelist","t":2,"c":0,"h":[900,1800,3600],"a":[5,5,5],"m":[0,0,0],"lo":[60,120,240],"hi":[75,150,300]},{"i":"unit:rootwarden","p":"units-rootwarden","n":"Rootwarden","t":4,"c":0,"h":[1500,3000,6000],"a":[10,10,10],"m":[0,0,0],"lo":[60,120,240],"hi":[90,180,360]},{"i":"unit:saw_rigger","p":"units-saw_rigger","n":"Saw Rigger","t":2,"c":0,"h":[1200,2400,4800],"a":[6,6,6],"m":[0,0,0],"lo":[55,110,220],"hi":[60,120,240]},{"i":"unit:skitterling","p":"units-skitterling","n":"Skitterling","t":1,"c":0,"h":[50,50,50],"a":[0,0,0],"m":[0,0,0],"lo":[8,8,8],"hi":[10,10,10]},{"i":"unit:skyfall_archer","p":"units-skyfall_archer","n":"Skyfall Archer","t":4,"c":0,"h":[1125,2250,4500],"a":[5,5,5],"m":[0,0,0],"lo":[70,140,280],"hi":[80,160,320]},{"i":"unit:soul_reaper","p":"units-soul_reaper","n":"Soul Reaper","t":3,"c":0,"h":[675,1350,3240],"a":[5,5,5],"m":[0,0,0],"lo":[77,154,370],"hi":[88,176,422]},{"i":"unit:soul_tyrant","p":"units-soul_tyrant","n":"Soul Tyrant","t":5,"c":0,"h":[1400,2800,5600],"a":[5,5,5],"m":[0,0,0],"lo":[60,120,240],"hi":[80,160,320]},{"i":"unit:spiked_palisade","p":"units-spiked_palisade","n":"Spiked Palisade","t":2,"c":0,"h":[600,600,600],"a":[20,20,20],"m":[100,100,100],"lo":[1,1,1],"hi":[1,1,1]},{"i":"unit:spire_acolyte","p":"units-spire_acolyte","n":"Spire Acolyte","t":1,"c":0,"h":[700,1400,2800],"a":[0,0,0],"m":[0,0,0],"lo":[40,80,160],"hi":[45,90,180]},{"i":"unit:spire_bear","p":"units-spire_bear","n":"Spire Bear","t":4,"c":0,"h":[1800,2600,3400],"a":[10,10,10],"m":[0,0,0],"lo":[150,275,400],"hi":[200,325,450]},{"i":"unit:spire_colossus","p":"units-spire_colossus","n":"Spire Colossus","t":5,"c":0,"h":[3000,6000,12000],"a":[15,15,15],"m":[0,0,0],"lo":[50,100,200],"hi":[60,120,240]},{"i":"unit:spire_exemplar","p":"units-spire_exemplar","n":"Spire Exemplar","t":5,"c":0,"h":[1500,3000,6000],"a":[8,8,8],"m":[0,0,0],"lo":[90,180,360],"hi":[110,220,440]},{"i":"unit:spire_marksman","p":"units-spire_marksman","n":"Spire Marksman","t":3,"c":0,"h":[675,1350,3240],"a":[5,5,5],"m":[0,0,0],"lo":[125,250,600],"hi":[150,300,720]},{"i":"unit:storm_augur","p":"units-storm_augur","n":"Storm Augur","t":4,"c":0,"h":[1000,2000,4000],"a":[5,5,5],"m":[0,0,0],"lo":[54,108,216],"hi":[60,120,240]},{"i":"unit:stormhide_beast","p":"units-stormhide_beast","n":"Stormhide Beast","t":5,"c":0,"h":[4500,4500,4500],"a":[0,0,0],"m":[0,0,0],"lo":[120,120,120],"hi":[160,160,160]},{"i":"unit:practice_dummy","p":"units-practice_dummy","n":"Straw Decoy","t":2,"c":0,"h":[1200,1200,1200],"a":[5,5,5],"m":[0,0,0],"lo":[1,1,1],"hi":[1,1,1]},{"i":"unit:sunfruit_tree","p":"units-sunfruit_tree","n":"Sunfruit Tree","t":3,"c":0,"h":[1000,1000,1000],"a":[0,0,0],"m":[0,0,0],"lo":[1,1,1],"hi":[1,1,1]},{"i":"unit:thorn_caller","p":"units-thorn_caller","n":"Thorn Caller","t":2,"c":0,"h":[900,1800,3600],"a":[0,0,0],"m":[0,0,0],"lo":[55,110,220],"hi":[65,130,260]},{"i":"unit:thorn_hound","p":"units-thorn_hound","n":"Thorn Hound","t":1,"c":0,"h":[1200,1200,1200],"a":[5,5,5],"m":[0,0,0],"lo":[60,60,60],"hi":[100,100,100]},{"i":"unit:thorn_sapling","p":"units-thorn_sapling","n":"Thorn Sapling","t":1,"c":0,"h":[400,700,1200],"a":[5,5,5],"m":[0,0,0],"lo":[30,50,90],"hi":[40,70,110]},{"i":"unit:thornback_boar","p":"units-thornback_boar","n":"Thornback Boar","t":1,"c":0,"h":[1150,2300,4600],"a":[5,5,5],"m":[0,0,0],"lo":[50,100,200],"hi":[55,110,220]},{"i":"unit:thornwood_seer","p":"units-thornwood_seer","n":"Thornwood Seer","t":1,"c":0,"h":[800,1600,3200],"a":[0,0,0],"m":[0,0,0],"lo":[40,80,160],"hi":[50,100,200]},{"i":"unit:tidal_stalker","p":"units-tidal_stalker","n":"Tidal Stalker","t":3,"c":0,"h":[800,1600,3840],"a":[5,5,5],"m":[0,0,0],"lo":[50,100,240],"hi":[60,120,288]},{"i":"unit:veiled_seer","p":"units-veiled_seer","n":"Veiled Seer","t":4,"c":0,"h":[1125,2250,4500],"a":[5,5,5],"m":[0,0,0],"lo":[90,180,360],"hi":[110,220,440]},{"i":"commander:cmd_brugg_ironjaw","p":"commanders-cmd_brugg_ironjaw","n":"Brugg Ironjaw","t":3,"c":1,"h":[1900,1900,1900,1900,1900,2450,2750,3250,3550,4100],"a":[8,8,8,8,8,8,12,12,16,16],"m":[15,15,15,15,15,15,15,15,15,15],"lo":[140,140,140,140,140,150,160,170,180,190],"hi":[170,170,170,170,170,180,190,200,210,220]},{"i":"commander:cmd_fizzwick_emberhorn","p":"commanders-cmd_fizzwick_emberhorn","n":"Fizzwick Emberhorn","t":3,"c":1,"h":[1800,1800,1800,1800,1800,2325,2850,3375,3900,4425],"a":[6,6,6,6,6,6,7,7,8,8],"m":[0,0,0,0,0,0,0,0,0,0],"lo":[98,98,98,98,98,110,122,134,146,158],"hi":[104,104,104,104,104,116,128,140,152,164]},{"i":"commander:cmd_pip_quickfingers","p":"commanders-cmd_pip_quickfingers","n":"Pip Quickfingers","t":3,"c":1,"h":[1600,1600,1600,1600,1600,1900,2200,2500,2800,3100],"a":[5,5,5,5,5,5,5,5,5,5],"m":[0,0,0,0,0,0,0,0,0,0],"lo":[90,90,90,90,90,100,110,120,130,140],"hi":[115,115,115,115,115,125,135,145,155,165]},{"i":"commander:cmd_vey_pactbinder","p":"commanders-cmd_vey_pactbinder","n":"Vey the Pactbinder","t":3,"c":1,"h":[1500,1500,1500,1500,1500,1875,2250,2625,3000,3375],"a":[2,2,2,2,2,3,3,3,4,4],"m":[0,0,0,0,0,0,0,0,0,0],"lo":[1,1,1,1,1,1,1,1,1,1],"hi":[1,1,1,1,1,1,1,1,1,1]}];
+
+  function armourMultiplier(armour) {
+    return 1 - (K.armorFactor * armour) / (K.armorBase + K.armorAbsFactor * Math.abs(armour));
+  }
+  function resistMultiplier(resist) {
+    return 1 - Math.min(resist, 100) / 100;
+  }
+  // The overtime damage bonus, in percent, at a time in the fight. Step 1 starts when overtime starts.
+  function overtimeBonus(seconds) {
+    var o = K.overtime;
+    if (!o || !(seconds >= o.startSeconds)) { return 0; }
+    var step = Math.floor((seconds - o.startSeconds) / o.stepSeconds + 1e-9) + 1;
+    var value = o.damageAmpPctPerStep * Math.pow(step, o.damageAmpBias);
+    if (o.maxDamageAmpPct !== null && value > o.maxDamageAmpPct) { value = o.maxDamageAmpPct; }
+    return Math.max(0, value);
+  }
+  function mitigate(raw, type, armour, resist, reduction, bonusPct) {
+    if (!(raw > 0)) { return 0; }
+    var amplified = raw * (1 + (bonusPct > 0 ? bonusPct : 0) / 100);
+    if (type === "pure") { return amplified; }
+    var keep = 1 - Math.min(reduction, 100) / 100;
+    var defence = type === "magical" ? resistMultiplier(resist) : armourMultiplier(armour);
+    return Math.max(0, amplified * defence * keep);
+  }
+  function hitsToKill(health, perHit) {
+    if (!(health > 0)) { return 0; }
+    if (!(perHit > 0)) { return Infinity; }
+    return Math.ceil(health / perHit - 1e-9);
+  }
+  var api = { armourMultiplier: armourMultiplier, resistMultiplier: resistMultiplier, overtimeBonus: overtimeBonus, mitigate: mitigate, hitsToKill: hitsToKill, K: K, UNITS: UNITS };
+  if (typeof module === "object" && module.exports) { module.exports = api; }
+  if (typeof document !== "object") { return; }
+
+  function el(id) { return document.getElementById(id); }
+  function num(id) { var value = parseFloat(el(id).value); return isFinite(value) ? value : 0; }
+  function show(value, digits) {
+    var factor = Math.pow(10, digits);
+    return String(Math.round(value * factor) / factor);
+  }
+  function unitById(id) {
+    for (var index = 0; index !== UNITS.length; index += 1) {
+      if (UNITS[index].i === id) { return UNITS[index]; }
+    }
+    return null;
+  }
+  function fillOptions(select) {
+    for (var index = 0; index !== UNITS.length; index += 1) {
+      var option = document.createElement("option");
+      option.value = UNITS[index].i;
+      option.textContent = UNITS[index].n + (UNITS[index].c ? " (commander)" : " (tier " + UNITS[index].t + ")");
+      select.appendChild(option);
+    }
+  }
+  // The second list of a side: stars for a unit, player levels for a commander.
+  var STAR_NAMES = ["One star", "Two stars", "Three stars"];
+  function fillGrades(select, unit) {
+    var count = unit ? unit.h.length : STAR_NAMES.length;
+    var commander = Boolean(unit && unit.c);
+    var kind = commander ? "c" + count : "s";
+    if (select.getAttribute("data-kind") === kind) { return; }
+    select.setAttribute("data-kind", kind);
+    select.textContent = "";
+    for (var index = 0; index !== count; index += 1) {
+      var option = document.createElement("option");
+      option.value = String(index + 1);
+      option.textContent = commander ? "Level " + (index + 1) : STAR_NAMES[index];
+      select.appendChild(option);
+    }
+  }
+  function grade(select, unit) {
+    var picked = parseInt(select.value, 10) - 1;
+    return Math.min(Math.max(isFinite(picked) ? picked : 0, 0), unit.h.length - 1);
+  }
+  function unitLink(unit) {
+    var root = document.body.getAttribute("data-root") || "";
+    var link = document.createElement("a");
+    link.setAttribute("href", root + unit.p + ".html");
+    link.textContent = unit.n;
+    return link;
+  }
+  function note(id, unit, text) {
+    var box = el(id);
+    box.textContent = "";
+    if (!unit) { return; }
+    box.appendChild(unitLink(unit));
+    box.appendChild(document.createTextNode(text));
+  }
+  function pickAttacker() {
+    var unit = unitById(el("dc-attacker").value);
+    fillGrades(el("dc-attacker-star"), unit);
+    if (!unit) { note("dc-attacker-note", null, ""); update(); return; }
+    var star = grade(el("dc-attacker-star"), unit);
+    el("dc-damage").value = show((unit.lo[star] + unit.hi[star]) / 2, 1);
+    el("dc-type").value = "physical";
+    note("dc-attacker-note", unit, " attacks for " + unit.lo[star] + " to " + unit.hi[star] + " physical damage. The average is used.");
+    update();
+  }
+  function pickTarget() {
+    var unit = unitById(el("dc-target").value);
+    fillGrades(el("dc-target-star"), unit);
+    if (!unit) { note("dc-target-note", null, ""); update(); return; }
+    var star = grade(el("dc-target-star"), unit);
+    el("dc-armour").value = unit.a[star];
+    el("dc-resist").value = unit.m[star];
+    el("dc-health").value = unit.h[star];
+    note("dc-target-note", unit, " has " + unit.h[star] + " health, " + unit.a[star] + " armour and " + unit.m[star] + " magic resistance.");
+    update();
+  }
+  function update() {
+    var raw = num("dc-damage");
+    var type = el("dc-type").value;
+    var health = num("dc-health");
+    var bonus = overtimeBonus(num("dc-seconds"));
+    var after = mitigate(raw, type, num("dc-armour"), num("dc-resist"), num("dc-reduction"), bonus);
+    var plain = mitigate(raw, type, num("dc-armour"), num("dc-resist"), num("dc-reduction"), 0);
+    var change = raw > 0 ? (1 - after / raw) * 100 : 0;
+    el("dc-overtime").textContent = K.overtime ? (bonus > 0 ? "+" + show(bonus, 1) + "%" : "none yet") : "none";
+    el("dc-after").textContent = show(after, 1);
+    el("dc-reduced").textContent = change >= 0 ? show(change, 1) + "% less" : show(-change, 1) + "% more";
+    var hits = hitsToKill(health, after);
+    el("dc-hits").textContent = health > 0 ? (isFinite(hits) ? String(hits) : "never") : "enter health";
+    var effective = plain > 0 && raw > 0 && health > 0 ? health * raw / plain : 0;
+    el("dc-detail").textContent = effective > 0
+      ? "Effective health against " + type + " damage, before any overtime bonus: " + show(effective, 0) + "."
+      : "";
+  }
+
+  fillOptions(el("dc-attacker"));
+  fillOptions(el("dc-target"));
+  fillGrades(el("dc-attacker-star"), null);
+  fillGrades(el("dc-target-star"), null);
+  var inputs = ["dc-damage", "dc-type", "dc-seconds", "dc-armour", "dc-resist", "dc-reduction", "dc-health"];
+  for (var index = 0; index !== inputs.length; index += 1) {
+    el(inputs[index]).addEventListener("input", update);
+    el(inputs[index]).addEventListener("change", update);
+  }
+  el("dc-attacker").addEventListener("change", pickAttacker);
+  el("dc-attacker-star").addEventListener("change", pickAttacker);
+  el("dc-target").addEventListener("change", pickTarget);
+  el("dc-target-star").addEventListener("change", pickTarget);
+  update();
+}());
+</script>
+<section id="how-it-is-worked-out"><h2>How it is worked out</h2><p>The calculator uses the same formulas as the game:</p><ul class=""><li>Physical: <code>damage &times; (1 - (0.052 &times; armour) / (0.9 + 0.048 &times; |armour|))</code></li><li>Magical: <code>damage &times; (1 - magic resistance / 100)</code>, with magic resistance counted up to 100</li><li>Both are then multiplied by <code>(1 - damage reduction / 100)</code></li><li>Pure: the damage is not reduced at all</li><li><a href="rules-overtime.html">Overtime</a>: from 35 seconds into a fight the damage is first multiplied by <code>(1 + overtime bonus / 100)</code>. This applies to every type, pure damage included. The bonus is worked out from the seconds you enter: it starts at 15% and grows by 15% every second, up to 150%</li></ul><p>Damage never goes below zero. Hits to kill is the target's health divided by the damage of one hit, rounded up. It assumes every hit is the same, with no healing, shields, dodges or critical hits, and that every hit lands at the time you entered: in a real fight the overtime bonus keeps growing between hits, and overtime also drains health on its own.</p></section><section id="what-to-enter"><h2>What to enter</h2><ul class=""><li><b>Damage before defences.</b> For a basic attack this is the roll plus <a href="rules-stats.html#damageFlat">bonus attack damage</a>, raised by any <a href="rules-stats.html#damagePct">bonus damage</a> and by a critical hit. For an ability it is the amount on the ability's page. See <a href="rules-damage.html#order-of-a-hit">the order of a hit</a>.</li><li><b>Armour and magic resistance.</b> The unit's own value plus everything it gains from items, alliances and effects, and minus anything enemies strip. The sources are listed on the <a href="rules-damage.html#what-changes-armour-and-resistance">damage rules page</a>.</li><li><b>Damage reduction.</b> Several sources multiply. Two sources of 20% are 36%, not 40%. See <a href="rules-stats.html#damageReductionPct">damage reduction</a>.</li><li><b>Health.</b> The target's maximum health, with <a href="rules-stats.html#healthFlat">bonus health</a> if it has any.</li><li><b>Seconds into the fight.</b> Leave it at 0 for a hit before <a href="rules-overtime.html">overtime</a>. From 35 seconds on, the calculator adds the overtime damage bonus of that moment. A fight ends at 45 seconds at the latest.</li></ul></section><p>More tools: <a href="tools-unit-table.html">Unit stat table</a>, <a href="tools-item-table.html">Item table</a>, <a href="tools-odds-calculator.html">Shop odds calculator</a>.</p>
+  </article>
+  <section class="backlinks"><h2>Pages that link here</h2><ul><li><a href="rules-damage.html">Damage, armour and resistance</a></li><li><a href="tools.html">Tables and calculators</a></li><li><a href="index.html">Warspire Wiki</a></li></ul></section>
+</main>
+<footer class="foot">
+  <a href="../index.html">Warspire</a>
+  <a href="index.html">Wiki home</a>
+  <a href="guides-glossary.html">Glossary</a>
+  <span>Built from content 2026.11.08.1, rules 2026.11.08.1.</span>
+</footer>
+<script src="search-data.js?v=202611160312" defer></script>
+<script src="wiki.js?v=202611160312" defer></script>
+</body>
+</html>

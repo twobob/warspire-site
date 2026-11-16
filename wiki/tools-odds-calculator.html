@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shop odds calculator | Warspire Wiki</title>
+<meta name="description" content="Chances of finding a unit at each level.">
+<link rel="preload" href="../fonts/Warspire-Bold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="wiki.css?v=202611160312">
+</head>
+<body data-root="" data-path="tools-odds-calculator">
+<header class="bar">
+  <a class="mark" href="../index.html" title="Warspire home">WARSPIRE</a>
+  <a class="wiki-mark" href="index.html">Wiki</a>
+  <form class="search" role="search" onsubmit="return false">
+    <input id="q" type="search" placeholder="Search units, items, rules" autocomplete="off" aria-label="Search the wiki">
+    <div id="results" class="results" hidden></div>
+  </form>
+  <a class="btn small" href="https://xn--1xap.com/WebRelease/">Play</a>
+  <button class="menu" id="menu" type="button" aria-expanded="false" aria-controls="sections">Sections</button>
+</header>
+<nav class="sections" id="sections" aria-label="Wiki sections"><a href="units.html">Units</a><a href="commanders.html">Commanders</a><a href="alliances.html">Alliances</a><a href="abilities.html">Abilities</a><a href="items.html">Items</a><a href="talents.html">Talents</a><a href="effects.html">Effects</a><a href="arenas.html">Arenas</a><a href="rules.html">Rules</a><a href="guides.html">Guides</a><a href="tools.html" aria-current="page">Tools</a></nav>
+<main class="page kind-page">
+  <nav class="crumbs" aria-label="Breadcrumb"><a href="index.html">Wiki</a><span class="sep">/</span><a href="tools.html">Tables and calculators</a></nav>
+  <article>
+    <header class="title"><h1>Shop odds calculator</h1><p class="summary">Chances of finding a unit at each level.</p></header>
+    
+    <p>How likely is the shop to show the unit you are looking for? Choose your level and the unit's tier, then say how many copies have already left the pool. A two-star unit holds 3 copies and a three-star unit 9, wherever it sits.</p><p>With <a href="items-gilded_invitation.html">Gilded Invitation</a> your shop rolls as if you were 1 level higher: choose that level here.</p><div class="calc"><label>Your level<select id="oc-level"><option value="1">Level 1</option><option value="2">Level 2</option><option value="3">Level 3</option><option value="4">Level 4</option><option value="5" selected>Level 5</option><option value="6">Level 6</option><option value="7">Level 7</option><option value="8">Level 8</option><option value="9">Level 9</option><option value="10">Level 10</option><option value="11">Shop level 11</option></select></label><label>Tier of the unit<select id="oc-tier"><option value="1" selected>Tier 1: Common (14 units, 1 gold)</option><option value="2">Tier 2: Uncommon (14 units, 2 gold)</option><option value="3">Tier 3: Rare (14 units, 3 gold)</option><option value="4">Tier 4: Epic (13 units, 4 gold)</option><option value="5">Tier 5: Legendary (10 units, 5 gold)</option></select></label><label>Copies of it already taken<input id="oc-taken" type="number" min="0" step="1" value="0"></label><label>Copies of other units of that tier taken<input id="oc-others" type="number" min="0" step="1" value="0"></label><label id="oc-ace-wrap" hidden>Ace of an alliance you have active<input id="oc-ace" type="checkbox"></label></div><div class="calc"><label>Chance the tier is rolled<output id="oc-tier-odds">0%</output></label><label>Chance in one shop slot<output id="oc-slot">0%</output></label><label>Chance in one shop<output id="oc-shop">0%</output></label><label>Average copies per shop<output id="oc-mean">0</output></label></div><p class="muted" id="oc-left"></p><section id="gold"><h2>Gold to find it</h2><div class="table-wrap"><table class="compact"><thead><tr><th>To find</th><th>Shops looked at, on average</th><th>Gold on rerolls at 2 each</th><th>Gold with the copies bought</th></tr></thead><tbody><tr><td>1 copy</td><td class="num" id="oc-shops-1"></td><td class="num" id="oc-rolls-1"></td><td class="num" id="oc-total-1"></td></tr><tr><td>3 copies (two stars)</td><td class="num" id="oc-shops-3"></td><td class="num" id="oc-rolls-3"></td><td class="num" id="oc-total-3"></td></tr><tr><td>9 copies (three stars)</td><td class="num" id="oc-shops-9"></td><td class="num" id="oc-rolls-9"></td><td class="num" id="oc-total-9"></td></tr></tbody></table></div><p>Averages over many tries. More often than not you will need fewer shops than this, and now and then many more. A row reads never when the pool does not hold that many copies.</p></section><section id="how"><h2>How the shop rolls</h2><ul class=""><li>The shop has 5 slots and fills them one after another.</li><li>For each slot it first rolls a tier, using the odds of your level in the table below.</li><li>It then picks a unit of that tier. Every unit is weighted by the copies of it left in the shared pool, less any copies already placed in this same shop, so a unit that other players are collecting comes up less often.</li><li>A tier 5 ace whose alliance you have active counts 15% more than its copies.</li><li>If the rolled tier has no copies left, the slot takes the nearest lower tier that has some, and only then a higher one.</li><li>A unit you already own at 3 stars is never offered to you.</li><li>When you reroll by hand, the units of the shop being replaced are skipped as long as other units of the rolled tier have copies.</li></ul><p>The full rules are on <a href="rules-shop.html">The shop</a> and <a href="rules-pool.html">The shared pool</a>.</p></section><section id="simplifications"><h2>What the calculator leaves out</h2><ul class=""><li>Only the tier you pick is tracked. Other tiers are assumed to have copies left, so a slot never falls into your tier from an empty one.</li><li>The copies of other units that are gone are treated as one total. The result is exact as long as no single unit of the tier has run out, because the fall in weight is the same whichever unit lost the copies.</li><li>Other units of the tier are not treated as aces of your active alliances, and none of them is counted as owned at the highest star.</li><li>The rule that a hand reroll skips the previous shop's units is left out. It can only raise the chance a little, when unwanted units of the same tier were in the shop you replaced.</li><li>The gold figures count every shop as a paid reroll at 2 gold, assume you buy each copy the moment it shows, and assume no other player takes a copy meanwhile. The free shop at the start of each round and a free reroll after a loss make the real cost lower.</li></ul></section><section id="tier-odds"><h2>Tier odds by level</h2><p>The chance of each tier for a single shop slot. Shop level 11 is level 10 with <a href="items-gilded_invitation.html">Gilded Invitation</a>.</p><div class="table-wrap"><table class="sortable compact"><thead><tr><th>Level</th><th>Tier 1</th><th>Tier 2</th><th>Tier 3</th><th>Tier 4</th><th>Tier 5</th></tr></thead><tbody><tr><td>1</td><td data-sort="80">80%</td><td data-sort="20">20%</td><td data-sort="0">0%</td><td data-sort="0">0%</td><td data-sort="0">0%</td></tr><tr><td>2</td><td data-sort="70">70%</td><td data-sort="30">30%</td><td data-sort="0">0%</td><td data-sort="0">0%</td><td data-sort="0">0%</td></tr><tr><td>3</td><td data-sort="55">55%</td><td data-sort="35">35%</td><td data-sort="10">10%</td><td data-sort="0">0%</td><td data-sort="0">0%</td></tr><tr><td>4</td><td data-sort="45">45%</td><td data-sort="40">40%</td><td data-sort="15">15%</td><td data-sort="0">0%</td><td data-sort="0">0%</td></tr><tr><td>5</td><td data-sort="35">35%</td><td data-sort="40">40%</td><td data-sort="25">25%</td><td data-sort="0">0%</td><td data-sort="0">0%</td></tr><tr><td>6</td><td data-sort="25">25%</td><td data-sort="35">35%</td><td data-sort="35">35%</td><td data-sort="5">5%</td><td data-sort="0">0%</td></tr><tr><td>7</td><td data-sort="20">20%</td><td data-sort="30">30%</td><td data-sort="40">40%</td><td data-sort="10">10%</td><td data-sort="0">0%</td></tr><tr><td>8</td><td data-sort="18">18%</td><td data-sort="24">24%</td><td data-sort="35">35%</td><td data-sort="20">20%</td><td data-sort="3">3%</td></tr><tr><td>9</td><td data-sort="15">15%</td><td data-sort="21">21%</td><td data-sort="30">30%</td><td data-sort="28">28%</td><td data-sort="6">6%</td></tr><tr><td>10</td><td data-sort="12">12%</td><td data-sort="18">18%</td><td data-sort="28">28%</td><td data-sort="32">32%</td><td data-sort="10">10%</td></tr><tr><td>11</td><td data-sort="15">15%</td><td data-sort="20">20%</td><td data-sort="25">25%</td><td data-sort="30">30%</td><td data-sort="10">10%</td></tr></tbody></table></div></section><section id="full-pool"><h2>One particular unit, full pool</h2><p>The chance that a shop shows at least one copy of one chosen unit when nobody has bought anything of its tier, worked out with the same method as the calculator.</p><div class="table-wrap"><table class="sortable compact"><thead><tr><th>Level</th><th>Tier 1</th><th>Tier 2</th><th>Tier 3</th><th>Tier 4</th><th>Tier 5</th></tr></thead><tbody><tr><td>1</td><td data-sort="25.573">25.6%</td><td data-sort="6.951">7.0%</td><td data-sort="0.0"><span class="muted">0%</span></td><td data-sort="0.0"><span class="muted">0%</span></td><td data-sort="0.0"><span class="muted">0%</span></td></tr><tr><td>2</td><td data-sort="22.689">22.7%</td><td data-sort="10.285">10.3%</td><td data-sort="0.0"><span class="muted">0%</span></td><td data-sort="0.0"><span class="muted">0%</span></td><td data-sort="0.0"><span class="muted">0%</span></td></tr><tr><td>3</td><td data-sort="18.201">18.2%</td><td data-sort="11.917">11.9%</td><td data-sort="3.523">3.5%</td><td data-sort="0.0"><span class="muted">0%</span></td><td data-sort="0.0"><span class="muted">0%</span></td></tr><tr><td>4</td><td data-sort="15.1">15.1%</td><td data-sort="13.527">13.5%</td><td data-sort="5.249">5.2%</td><td data-sort="0.0"><span class="muted">0%</span></td><td data-sort="0.0"><span class="muted">0%</span></td></tr><tr><td>5</td><td data-sort="11.908">11.9%</td><td data-sort="13.527">13.5%</td><td data-sort="8.631">8.6%</td><td data-sort="0.0"><span class="muted">0%</span></td><td data-sort="0.0"><span class="muted">0%</span></td></tr><tr><td>6</td><td data-sort="8.625">8.6%</td><td data-sort="11.917">11.9%</td><td data-sort="11.921">11.9%</td><td data-sort="1.909">1.9%</td><td data-sort="0.0"><span class="muted">0%</span></td></tr><tr><td>7</td><td data-sort="6.948">6.9%</td><td data-sort="10.285">10.3%</td><td data-sort="13.531">13.5%</td><td data-sort="3.792">3.8%</td><td data-sort="0.0"><span class="muted">0%</span></td></tr><tr><td>8</td><td data-sort="6.27">6.3%</td><td data-sort="8.296">8.3%</td><td data-sort="11.921">11.9%</td><td data-sort="7.477">7.5%</td><td data-sort="1.492">1.5%</td></tr><tr><td>9</td><td data-sort="5.247">5.2%</td><td data-sort="7.288">7.3%</td><td data-sort="10.287">10.3%</td><td data-sort="10.349">10.3%</td><td data-sort="2.967">3.0%</td></tr><tr><td>10</td><td data-sort="4.215">4.2%</td><td data-sort="6.273">6.3%</td><td data-sort="9.627">9.6%</td><td data-sort="11.76">11.8%</td><td data-sort="4.91">4.9%</td></tr></tbody></table></div></section><section id="pool"><h2>The pool</h2><div class="table-wrap"><table class="compact"><thead><tr><th>Tier</th><th>Units</th><th>Copies of each</th><th>Copies in the tier</th><th>Cost</th></tr></thead><tbody><tr><td><span class="tier t1" title="Common">Tier 1</span></td><td>14</td><td>30</td><td>420</td><td>1</td></tr><tr><td><span class="tier t2" title="Uncommon">Tier 2</span></td><td>14</td><td>20</td><td>280</td><td>2</td></tr><tr><td><span class="tier t3" title="Rare">Tier 3</span></td><td>14</td><td>18</td><td>252</td><td>3</td></tr><tr><td><span class="tier t4" title="Epic">Tier 4</span></td><td>13</td><td>12</td><td>156</td><td>4</td></tr><tr><td><span class="tier t5" title="Legendary">Tier 5</span></td><td>10</td><td>10</td><td>100</td><td>5</td></tr></tbody></table></div></section><script>
+(function () {
+  "use strict";
+  var D = {"odds":[[80,20,0,0,0],[70,30,0,0,0],[55,35,10,0,0],[45,40,15,0,0],[35,40,25,0,0],[25,35,35,5,0],[20,30,40,10,0],[18,24,35,20,3],[15,21,30,28,6],[12,18,28,32,10],[15,20,25,30,10]],"maxLevel":10,"maxShopLevel":11,"copies":[30,20,18,12,10],"shopSize":5,"tierCost":[1,2,3,4,5],"rerollCost":2,"tierCount":5,"units":[14,14,14,13,10],"aces":[0,0,0,0,8],"aceBonusPct":15,"needs":[1,3,9]};
+
+  function oddsFor(level) {
+    var index = Math.max(1, Math.min(D.maxShopLevel, level, D.odds.length)) - 1;
+    return D.odds[index];
+  }
+
+  // Chance of 0, 1, 2 ... copies of the wanted unit in one shop.
+  // Each slot rolls a tier by the level's odds, then a unit of that tier weighted by the copies left,
+  // less the copies already drawn into this same shop. An ace of an active alliance weighs more.
+  function shopDistribution(level, tier, taken, others, ace) {
+    var odds = oddsFor(level);
+    var total = 0;
+    for (var t = 0; t < odds.length; t += 1) { total += odds[t]; }
+    var chanceTier = total > 0 ? odds[tier - 1] / total : (tier === 1 ? 1 : 0);
+    var copies = D.copies[tier - 1];
+    var mine = Math.max(0, copies - taken);
+    var rest = Math.max(0, (D.units[tier - 1] - 1) * copies - others);
+    var multiplier = ace ? 1 + D.aceBonusPct / 100 : 1;
+    var state = { "0,0": 1 };
+    function add(target, key, value) { target[key] = (target[key] || 0) + value; }
+    for (var slot = 0; slot < D.shopSize; slot += 1) {
+      var next = {};
+      for (var key in state) {
+        var parts = key.split(",");
+        var found = Number(parts[0]);
+        var drawn = Number(parts[1]);
+        var chance = state[key];
+        var weightMine = (mine - found) * multiplier;
+        var weightRest = rest - drawn;
+        var weight = weightMine + weightRest;
+        if (weight <= 0 || chanceTier === 0) { add(next, key, chance); continue; }
+        add(next, key, chance * (1 - chanceTier));
+        if (weightMine > 0) { add(next, (found + 1) + "," + drawn, chance * chanceTier * weightMine / weight); }
+        if (weightRest > 0) { add(next, found + "," + (drawn + 1), chance * chanceTier * weightRest / weight); }
+      }
+      state = next;
+    }
+    var result = [];
+    for (var n = 0; n <= D.shopSize; n += 1) { result.push(0); }
+    for (var last in state) { result[Number(last.split(",")[0])] += state[last]; }
+    return result;
+  }
+
+  function slotChance(level, tier, taken, others, ace) {
+    var odds = oddsFor(level);
+    var total = 0;
+    for (var t = 0; t < odds.length; t += 1) { total += odds[t]; }
+    var copies = D.copies[tier - 1];
+    var mine = Math.max(0, copies - taken) * (ace ? 1 + D.aceBonusPct / 100 : 1);
+    var rest = Math.max(0, (D.units[tier - 1] - 1) * copies - others);
+    if (total <= 0 || mine + rest <= 0) { return 0; }
+    return (odds[tier - 1] / total) * mine / (mine + rest);
+  }
+
+  // Average number of shops looked at to collect `need` copies, buying every copy that shows.
+  function expectedShops(level, tier, taken, others, ace, need) {
+    var expected = [];
+    expected[need] = 0;
+    for (var have = need - 1; have >= 0; have -= 1) {
+      var dist = shopDistribution(level, tier, taken + have, others, ace);
+      if (1 - dist[0] <= 1e-12) { return Infinity; }
+      var sum = 1;
+      for (var found = 1; found < dist.length; found += 1) {
+        if (dist[found] > 0) { sum += dist[found] * expected[Math.min(need, have + found)]; }
+      }
+      expected[have] = sum / (1 - dist[0]);
+    }
+    return expected[0];
+  }
+
+  var api = { oddsFor: oddsFor, shopDistribution: shopDistribution, slotChance: slotChance, expectedShops: expectedShops, data: D };
+  if (typeof module !== "undefined" && module.exports) { module.exports = api; }
+  if (typeof document === "undefined") { return; }
+
+  function byId(id) { return document.getElementById(id); }
+  function percent(value) { return (value * 100).toFixed(value > 0 && value < 0.1 ? 2 : 1) + "%"; }
+  function amount(value) { return isFinite(value) ? (Math.round(value * 10) / 10).toFixed(1) : "never"; }
+  function clampInput(input, highest) {
+    var value = Math.floor(Number(input.value) || 0);
+    value = Math.max(0, Math.min(highest, value));
+    input.max = String(highest);
+    if (String(value) !== input.value) { input.value = String(value); }
+    return value;
+  }
+
+  function update() {
+    var level = Number(byId("oc-level").value);
+    var tier = Number(byId("oc-tier").value);
+    var copies = D.copies[tier - 1];
+    var taken = clampInput(byId("oc-taken"), copies);
+    var others = clampInput(byId("oc-others"), (D.units[tier - 1] - 1) * copies);
+    var aceWrap = byId("oc-ace-wrap");
+    var aceAllowed = tier === D.tierCount && D.aces[tier - 1] > 0;
+    aceWrap.hidden = !aceAllowed;
+    var ace = aceAllowed && byId("oc-ace").checked;
+    var dist = shopDistribution(level, tier, taken, others, ace);
+    var mean = 0;
+    for (var n = 1; n < dist.length; n += 1) { mean += n * dist[n]; }
+    byId("oc-slot").textContent = percent(slotChance(level, tier, taken, others, ace));
+    byId("oc-shop").textContent = percent(1 - dist[0]);
+    byId("oc-mean").textContent = mean.toFixed(2);
+    byId("oc-tier-odds").textContent = oddsFor(level)[tier - 1] + "%";
+    byId("oc-left").textContent = (copies - taken) + " of " + copies + " copies of this unit and "
+      + ((D.units[tier - 1] - 1) * copies - others) + " copies of the other " + (D.units[tier - 1] - 1) + " tier " + tier + " units are left in the pool.";
+    for (var row = 0; row < D.needs.length; row += 1) {
+      var need = D.needs[row];
+      var shops = expectedShops(level, tier, taken, others, ace, need);
+      byId("oc-shops-" + need).textContent = amount(shops);
+      byId("oc-rolls-" + need).textContent = amount(shops * D.rerollCost);
+      byId("oc-total-" + need).textContent = amount(shops * D.rerollCost + need * D.tierCost[tier - 1]);
+    }
+  }
+
+  var ids = ["oc-level", "oc-tier", "oc-taken", "oc-others", "oc-ace"];
+  for (var i = 0; i < ids.length; i += 1) {
+    byId(ids[i]).addEventListener("input", update);
+    byId(ids[i]).addEventListener("change", update);
+  }
+  update();
+})();
+</script>
+  </article>
+  <section class="backlinks"><h2>Pages that link here</h2><ul><li><a href="rules-aces.html">Aces</a></li><li><a href="tools-damage-calculator.html">Damage calculator</a></li><li><a href="guides-getting-started.html">Getting started</a></li><li><a href="rules-overview.html">How a match works</a></li><li><a href="rules-experience.html">Levels and experience</a></li><li><a href="guides-faq.html">Questions and answers</a></li><li><a href="tools.html">Tables and calculators</a></li><li><a href="guides-interface.html">The interface</a></li><li><a href="rules-pool.html">The shared pool</a></li><li><a href="rules-shop.html">The shop</a></li><li><a href="index.html">Warspire Wiki</a></li></ul></section>
+</main>
+<footer class="foot">
+  <a href="../index.html">Warspire</a>
+  <a href="index.html">Wiki home</a>
+  <a href="guides-glossary.html">Glossary</a>
+  <span>Built from content 2026.11.08.1, rules 2026.11.08.1.</span>
+</footer>
+<script src="search-data.js?v=202611160312" defer></script>
+<script src="wiki.js?v=202611160312" defer></script>
+</body>
+</html>

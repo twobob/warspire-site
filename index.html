@@ -1,0 +1,512 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Warspire: Deploy. Conquer. Ascend.</title>
+<meta name="description" content="Warspire is an eight-player autobattler: draft a warband, bind alliances, follow a commander and climb the spire.">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="preload" href="fonts/Warspire-Bold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/Warspire-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+@font-face { font-family: "Warspire"; src: url("fonts/Warspire-Regular.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Warspire"; src: url("fonts/Warspire-Bold.woff2") format("woff2"); font-weight: 700; font-display: swap; }
+
+:root {
+  --ink: #16121c;
+  --ink-2: #221c2b;
+  --ink-3: #2f2739;
+  --bone: #f4eedc;
+  --bone-dim: #b9b0a0;
+  --gold: #ffcc45;
+  --ember: #f0652a;
+  --blood: #c8384e;
+  --moss: #7cc04a;
+  --brass: #d08a3a;
+  --tide: #3aa0b8;
+  --lean: 14deg;
+  --drop: 8px;
+  --gutter: clamp(16px, 4vw, 56px);
+  --display: "Warspire", "Arial Narrow", "Segoe UI", system-ui, sans-serif;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--ink); color: var(--bone); font-family: var(--display); font-size: 17px; line-height: 1.5; letter-spacing: 0.012em; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+img { display: block; max-width: 100%; }
+a { color: inherit; }
+h1, h2, h3, p { margin: 0; }
+h1, h2, h3, .label { font-weight: 700; text-transform: uppercase; line-height: 0.95; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
+
+/* top bar */
+.bar { position: fixed; inset: 0 0 auto 0; z-index: 20; display: flex; align-items: center; gap: 24px; padding: 10px var(--gutter); background: var(--ink); border-bottom: 3px solid var(--gold); }
+.bar .mark { font-weight: 700; font-size: 26px; letter-spacing: 0.04em; text-decoration: none; color: var(--gold); }
+.bar nav { display: flex; gap: clamp(10px, 2vw, 26px); margin-left: auto; flex-wrap: wrap; }
+.bar nav a { font-weight: 700; font-size: 15px; letter-spacing: 0.1em; text-transform: uppercase; text-decoration: none; color: var(--bone-dim); }
+.bar nav a:hover { color: var(--bone); }
+.bar nav a.btn, .bar nav a.btn:hover { color: var(--ink); }
+.btn { display: inline-block; padding: 14px 26px 12px; font-weight: 700; font-size: 20px; letter-spacing: 0.08em; text-transform: uppercase; text-decoration: none; color: var(--ink); background: var(--gold); border: 0; cursor: pointer; clip-path: polygon(12px 0, 100% 0, calc(100% - 12px) 100%, 0 100%); transition: transform 0.12s; }
+.btn:hover { transform: translate(-2px, -2px); }
+.btn.ghost { background: var(--ink-3); color: var(--bone); }
+.btn.small { font-size: 15px; padding: 9px 18px 7px; }
+
+/* hero */
+.hero { position: relative; min-height: min(100vh, 920px); padding-top: 56px; display: grid; grid-template-columns: minmax(0, 0.76fr) minmax(0, 1.24fr); overflow: hidden; }
+.hero-copy { position: relative; z-index: 2; align-self: center; padding: 40px var(--gutter); container-type: inline-size; }
+.kicker { font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold); font-size: 15px; }
+.wordmark { font-size: clamp(64px, 10.4vw, 176px); letter-spacing: 0.01em; color: var(--gold); text-shadow: 0.045em 0.045em 0 var(--blood); margin: 10px 0 6px -0.03em; white-space: nowrap; }
+.tagline { white-space: nowrap; font-weight: 700; font-size: clamp(14px, 1.75vw, 26px); letter-spacing: 0.16em; text-transform: uppercase; color: var(--bone); }
+.lede { max-width: 30em; margin-top: 22px; font-size: clamp(16px, 1.3vw, 19px); color: var(--bone-dim); }
+.cta { display: flex; flex-wrap: nowrap; gap: min(14px, 2.4cqi); margin-top: 28px; }
+.cta .btn { font-size: min(20px, 3cqi); padding: 0.7em 1.3em 0.6em; clip-path: polygon(0.6em 0, 100% 0, calc(100% - 0.6em) 100%, 0 100%); white-space: nowrap; }
+.stats { display: flex; flex-wrap: nowrap; gap: min(30px, 4.2cqi); margin-top: 38px; }
+.stat b { display: block; font-size: min(50px, 8cqi); line-height: 0.9; color: var(--bone); }
+.stat span { font-weight: 700; font-size: min(13px, 2.15cqi); white-space: nowrap; letter-spacing: 0.16em; text-transform: uppercase; color: var(--bone-dim); }
+
+.slabs { position: relative; margin: 0 104px 0 120px; }
+.slabs .row { position: absolute; inset: 0; display: flex; transform: skewX(calc(var(--lean) * -1)); }
+.slabs .bg span { flex: 1; background: var(--c); border-left: 6px solid var(--ink); }
+.slab { position: relative; flex: 1; text-decoration: none; }
+.slab .art { position: absolute; inset: 0; transform: skewX(var(--lean)); transform-origin: bottom; }
+.slab img { position: absolute; left: 0; bottom: 0; max-width: none; visibility: hidden; filter: drop-shadow(12px 9px 0 rgba(22, 18, 28, 0.45)); animation: rise 0.7s cubic-bezier(.2,.8,.2,1) both; animation-delay: calc(var(--i) * 90ms + 120ms); transition: transform 0.2s cubic-bezier(.2,.8,.2,1); }
+.slab img.placed { visibility: visible; }
+.slab:hover img, .slab:focus-visible img { transform: translateY(-14px) scale(1.03); }
+@keyframes rise { from { transform: translateY(12%); opacity: 0; } to { transform: none; opacity: 1; } }
+
+/* sections */
+section { position: relative; }
+.band { padding: clamp(64px, 9vw, 130px) var(--gutter); }
+.band.cut { clip-path: polygon(0 3.2vw, 100% 0, 100% 100%, 0 100%); margin-top: -3.2vw; padding-top: calc(clamp(64px, 9vw, 130px) + 3.2vw); }
+.band.bone { background: var(--bone); color: var(--ink); }
+.band.gold { background: var(--gold); color: var(--ink); }
+.band.ink2 { background: var(--ink-2); }
+.wrap { max-width: 1360px; margin: 0 auto; }
+.head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px 40px; margin-bottom: clamp(28px, 4vw, 54px); }
+.head h2 { font-size: clamp(44px, 7vw, 112px); }
+.head p { max-width: 30em; font-size: 18px; opacity: 0.8; }
+.num { font-weight: 700; font-size: 15px; letter-spacing: 0.2em; }
+
+/* how it plays */
+.steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+.step { position: relative; padding: 26px 26px 30px; background: var(--ink); color: var(--bone); min-height: 250px; box-shadow: var(--drop) var(--drop) 0 var(--c); }
+.step .big { font-weight: 700; font-size: 120px; line-height: 0.8; color: var(--c); }
+.step h3 { font-size: 34px; margin: 14px 0 10px; }
+.step p { color: var(--bone-dim); }
+
+/* commanders */
+.cmd { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(20px, 4vw, 64px); align-items: stretch; }
+.cmd-stage { position: relative; min-height: clamp(360px, 46vw, 640px); background: var(--c); overflow: hidden; transition: background 0.25s; clip-path: polygon(8% 0, 100% 0, 92% 100%, 0 100%); }
+.cmd-stage img { position: absolute; left: 6%; bottom: 0; height: 92%; width: 88%; object-fit: contain; object-position: bottom; filter: drop-shadow(14px 10px 0 rgba(22, 18, 28, 0.45)); }
+.cmd-stage img.swap { animation: rise 0.45s cubic-bezier(.2,.8,.2,1) both; }
+.cmd-info h3 { font-size: clamp(36px, 4.6vw, 72px); color: var(--c); transition: color 0.25s; }
+.cmd-role { margin: 10px 0 18px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; font-size: 14px; color: var(--bone-dim); }
+.cmd-info p { font-size: 19px; max-width: 30em; }
+.tags { display: flex; flex-wrap: wrap; gap: 8px; margin: 20px 0 0; padding: 0; list-style: none; }
+.tags li { padding: 6px 12px 4px; background: var(--ink-3); font-weight: 700; font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; }
+.tags li.build { background: var(--c); color: var(--ink); }
+.cmd-pick { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-top: 30px; }
+.cmd-pick button { position: relative; height: 96px; padding: 0; border: 0; background: var(--c); cursor: pointer; overflow: hidden; }
+.cmd-pick button img { position: absolute; left: 50%; top: 6px; height: 230%; width: auto; max-width: none; transform: translateX(-50%); }
+.cmd-pick button[aria-pressed="true"] { box-shadow: 0 0 0 4px var(--bone); }
+.cmd-pick button[aria-pressed="false"] { opacity: 0.55; }
+.cmd-pick button:hover { opacity: 1; }
+
+/* roster */
+.filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 22px; align-items: center; }
+.chip { padding: 9px 16px 7px; border: 0; background: rgba(22, 18, 28, 0.1); color: var(--ink); font-weight: 700; font-size: 14px; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--c, var(--bone)); }
+.chip .pip { display: inline-block; width: 10px; height: 10px; margin-right: 8px; background: var(--c); transform: rotate(45deg); }
+.count { margin-left: auto; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; font-size: 14px; opacity: 0.7; }
+.roster { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; }
+.unit { position: relative; aspect-ratio: 3 / 4; background: var(--c); overflow: hidden; transition: transform 0.12s, box-shadow 0.12s; }
+.unit:hover { transform: translate(-4px, -4px); box-shadow: var(--drop) var(--drop) 0 var(--ink); z-index: 1; }
+.unit img { position: absolute; left: 50%; bottom: 34px; height: calc(100% - 46px); width: 92%; object-fit: contain; object-position: bottom; transform: translateX(-50%); filter: drop-shadow(5px 4px 0 rgba(22, 18, 28, 0.4)); }
+.unit .cap { position: absolute; left: 0; right: 0; bottom: 0; padding: 7px 8px 5px; background: var(--ink); color: var(--bone); font-weight: 700; font-size: 13px; letter-spacing: 0.04em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.unit .tier { position: absolute; top: 6px; left: 8px; font-weight: 700; font-size: 22px; color: var(--ink); }
+.unit .ace { position: absolute; top: 8px; right: 8px; padding: 3px 7px 1px; background: var(--ink); color: var(--gold); font-weight: 700; font-size: 11px; letter-spacing: 0.12em; }
+.unit[hidden] { display: none; }
+
+/* alliances */
+.ally-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px; }
+.ally { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 0; background: var(--ink-3); text-align: left; cursor: pointer; border-left: 6px solid var(--c); transition: transform 0.12s; }
+.ally:hover { transform: translateX(4px); }
+.ally[aria-pressed="true"] { background: var(--c); color: var(--ink); }
+.ally img { width: 44px; height: 44px; flex: none; }
+.ally b { display: block; font-size: 18px; text-transform: uppercase; letter-spacing: 0.04em; line-height: 1.05; }
+.ally span { font-size: 12px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.7; }
+.ally-detail { margin-top: 26px; padding: 26px 28px; background: var(--ink); border-left: 10px solid var(--c); display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 26px; align-items: center; min-height: 190px; }
+.ally-detail h3 { font-size: clamp(34px, 4vw, 60px); color: var(--c); }
+.ally-detail p { margin-top: 10px; color: var(--bone-dim); }
+.ally-detail .steps-row { margin-top: 12px; font-weight: 700; letter-spacing: 0.14em; }
+.ally-members { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-end; }
+.ally-members figure { margin: 0; width: 92px; background: var(--c); }
+.ally-members img { height: 104px; width: 100%; object-fit: contain; object-position: bottom; padding-top: 6px; }
+.ally-members figcaption { padding: 4px 4px 2px; background: var(--ink-3); font-size: 10px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* arenas */
+.arena-stage { position: relative; background: var(--ink); clip-path: polygon(22px 0, 100% 0, calc(100% - 22px) 100%, 0 100%); }
+.arena-stage img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
+.arena-stage img.swap { animation: fade 0.35s ease both; }
+@keyframes fade { from { opacity: 0.2; } to { opacity: 1; } }
+.arena-name { position: absolute; left: 0; bottom: 0; padding: 14px 34px 10px 30px; background: var(--ink); color: var(--gold); font-weight: 700; font-size: clamp(24px, 3.4vw, 52px); text-transform: uppercase; line-height: 0.95; clip-path: polygon(0 0, 100% 0, calc(100% - 16px) 100%, 0 100%); }
+.arena-pick { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-top: 12px; }
+.arena-pick button { padding: 0; border: 0; background: var(--ink); cursor: pointer; text-align: left; outline: 4px solid transparent; outline-offset: -4px; }
+.arena-pick button[aria-pressed="true"] { outline-color: var(--blood); }
+.arena-pick img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; }
+.arena-pick span { display: block; padding: 7px 10px 5px; color: var(--bone); font-weight: 700; font-size: 14px; letter-spacing: 0.1em; text-transform: uppercase; }
+
+/* footer */
+footer { padding: 60px var(--gutter) 70px; text-align: center; background: var(--ink); }
+footer .wordmark { font-size: clamp(48px, 9vw, 130px); margin: 0 0 20px; }
+footer small { display: block; margin-top: 30px; color: var(--bone-dim); font-size: 14px; letter-spacing: 0.06em; }
+
+@media (max-width: 900px) {
+  .hero { grid-template-columns: 1fr; min-height: 0; }
+  .slabs { height: 96vw; min-height: 340px; margin: 0 16% 0 16%; }
+  .hero-copy { padding-bottom: 10px; }
+  .hero .wordmark { font-size: 15.5vw; }
+  .head h2 { font-size: clamp(38px, 11vw, 80px); }
+  .cmd-pick button { height: 70px; }
+  .type .aa { font-size: 34vw; }
+  .steps, .cmd, .type, .ally-detail { grid-template-columns: 1fr; }
+  .bar nav a:not(.keep) { display: none; }
+  .roster { grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 10px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}
+</style>
+</head>
+<body>
+
+<header class="bar">
+  <a class="mark" href="#top">WARSPIRE</a>
+  <nav aria-label="Sections">
+    <a href="#play">How it plays</a>
+    <a href="#commanders">Commanders</a>
+    <a href="#roster">Warband</a>
+    <a href="#alliances">Alliances</a>
+    <a href="#arenas">Arenas</a>
+    <a href="wiki/index.html">Wiki</a>
+    <a class="btn small keep" href="https://xn--1xap.com/WebRelease/">Play</a>
+  </nav>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <div class="hero-copy">
+      <p class="kicker">Eight players · One spire</p>
+      <h1 class="wordmark">WARSPIRE</h1>
+      <p class="tagline">Deploy · Conquer · Ascend</p>
+      <p class="lede">Draft a warband from the shared pool, bind its alliances, and send it up the spire behind a commander of your choosing. The fight plays itself. The plan is all yours.</p>
+      <div class="cta">
+        <a class="btn" href="https://xn--1xap.com/WebRelease/">Play in browser</a>
+        <a class="btn ghost" href="#play">How it plays</a>
+        <a class="btn ghost" href="wiki/index.html">Wiki</a>
+      </div>
+      <div class="stats" id="stats"></div>
+    </div>
+    <div class="slabs" id="slabs"></div>
+  </section>
+
+  <section class="band bone cut" id="play">
+    <div class="wrap">
+      <div class="head">
+        <h2>Three moves.<br>Every round.</h2>
+        <p>No twitch reflexes, no action bar. You win in the thirty seconds before the gates open.</p>
+      </div>
+      <div class="steps">
+        <article class="step" style="--c: var(--ember)"><div class="big">1</div><h3>Deploy</h3><p>Buy from a shop every player shares. Three of a kind fuse into a stronger unit, so every purchase is also a denial.</p></article>
+        <article class="step" style="--c: var(--tide)"><div class="big">2</div><h3>Conquer</h3><p>Place your warband on the board and let go. Alliances trigger, abilities fire, and the round is settled without another tap.</p></article>
+        <article class="step" style="--c: var(--moss)"><div class="big">3</div><h3>Ascend</h3><p>Spend gold on levels, loot and talents. Outlast seven rivals and the top of the spire is yours.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <section class="band cut ink2" id="commanders">
+    <div class="wrap">
+      <div class="head">
+        <h2>Pick your<br>commander</h2>
+        <p>Your commander stands on the board with your warband, with two builds apiece and talents chosen as the match unfolds.</p>
+      </div>
+      <div class="cmd" id="cmd">
+        <div class="cmd-stage"><img id="cmd-art" alt=""></div>
+        <div class="cmd-info">
+          <h3 id="cmd-name"></h3>
+          <p class="cmd-role" id="cmd-role"></p>
+          <p id="cmd-desc"></p>
+          <ul class="tags" id="cmd-tags"></ul>
+          <div class="cmd-pick" id="cmd-pick" role="group" aria-label="Choose a commander"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band gold cut" id="roster">
+    <div class="wrap">
+      <div class="head">
+        <h2>The warband</h2>
+        <p>Every unit in the shop, from gutter scavengers to the legends at the top of the spire.</p>
+      </div>
+      <div class="filters" id="filters" role="group" aria-label="Filter units by tier"></div>
+      <div class="roster" id="roster-grid"></div>
+    </div>
+  </section>
+
+  <section class="band cut ink2" id="alliances">
+    <div class="wrap">
+      <div class="head">
+        <h2>Bind alliances</h2>
+        <p>Each unit carries two or three allegiances. Field enough of one and the whole warband changes shape.</p>
+      </div>
+      <div class="ally-grid" id="ally-grid"></div>
+      <div class="ally-detail" id="ally-detail" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <section class="band bone cut" id="arenas">
+    <div class="wrap">
+      <div class="head">
+        <h2>Arenas</h2>
+        <p>The spire is more than one biome. Matches can be fought across different battlegrounds, each with its own light, stone and weather.</p>
+      </div>
+      <div class="arena-stage"><img id="arena-art" alt=""><div class="arena-name" id="arena-name"></div></div>
+      <div class="arena-pick" id="arena-pick" role="group" aria-label="Choose an arena"></div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wordmark">WARSPIRE</div>
+  <a class="btn" href="https://xn--1xap.com/WebRelease/">Play in browser</a>
+  <a class="btn ghost" href="wiki/index.html">Read the wiki</a>
+  <small>Content build <span id="version"></span>.</small>
+</footer>
+
+<script src="data.js"></script>
+<script>
+(function () {
+  "use strict";
+  var data = window.WARSPIRE;
+  if (!data) { return; }
+  var $ = function (id) { return document.getElementById(id); };
+  function el(tag, attrs, text) {
+    var node = document.createElement(tag);
+    for (var key in attrs || {}) {
+      if (key === "style") { node.setAttribute("style", attrs[key]); } else if (key in node) { node[key] = attrs[key]; } else { node.setAttribute(key, attrs[key]); }
+    }
+    if (text != null) { node.textContent = text; }
+    return node;
+  }
+  var tierColour = {};
+  data.tiers.forEach(function (t) { tierColour[t.tier] = t.colour; });
+  var allianceById = {};
+  data.alliances.forEach(function (a) { allianceById[a.id] = a; });
+  $("version").textContent = data.contentVersion;
+
+  // arenas
+  (function () {
+    var arenas = data.arenas || [];
+    if (!arenas.length) { $("arenas").hidden = true; return; }
+    var art = $("arena-art");
+    function show(index, animate) {
+      var a = arenas[index];
+      art.src = "art/arenas/" + a.id + ".webp";
+      art.alt = a.name + " arena";
+      if (animate) { art.classList.remove("swap"); void art.offsetWidth; art.classList.add("swap"); }
+      $("arena-name").textContent = a.name;
+      Array.prototype.forEach.call($("arena-pick").children, function (button, i) { button.setAttribute("aria-pressed", String(i === index)); });
+    }
+    arenas.forEach(function (a, i) {
+      var button = el("button", { type: "button" });
+      button.appendChild(el("img", { src: "art/arenas/" + a.id + "_thumb.webp", alt: "", loading: "lazy" }));
+      button.appendChild(el("span", null, a.name));
+      button.addEventListener("click", function () { show(i, true); });
+      $("arena-pick").appendChild(button);
+    });
+    show(arenas.length > 1 ? 1 : 0, false);
+  })();
+
+  // stats
+  [[8, "Players"], [data.units.length, "Units"], [data.alliances.length, "Alliances"], [data.commanders.length, "Commanders"], [(data.arenas || []).length, "Arenas"]].forEach(function (pair) {
+    var stat = el("div", { className: "stat" });
+    stat.appendChild(el("b", null, String(pair[0])));
+    stat.appendChild(el("span", null, pair[1]));
+    $("stats").appendChild(stat);
+  });
+
+  // hero slabs + commander section
+  var current = 0;
+  function showCommander(index, animate) {
+    var c = data.commanders[index];
+    current = index;
+    var root = $("cmd");
+    root.style.setProperty("--c", c.colour);
+    var art = $("cmd-art");
+    art.src = "art/commanders/" + c.id + ".webp";
+    art.alt = c.name;
+    if (animate) { art.classList.remove("swap"); void art.offsetWidth; art.classList.add("swap"); }
+    $("cmd-name").textContent = c.name;
+    $("cmd-role").textContent = c.role + " commander";
+    $("cmd-desc").textContent = c.description;
+    var tags = $("cmd-tags");
+    tags.textContent = "";
+    c.builds.forEach(function (b) { tags.appendChild(el("li", { className: "build" }, b)); });
+    c.tags.forEach(function (t) { tags.appendChild(el("li", null, t)); });
+    Array.prototype.forEach.call($("cmd-pick").children, function (button, i) { button.setAttribute("aria-pressed", String(i === index)); });
+  }
+  var heroFigures = [];
+  function layoutHero() {
+    var stage = $("slabs");
+    var height = stage.clientHeight;
+    var count = heroFigures.length;
+    if (!height || !count) { return; }
+    var narrow = window.matchMedia("(max-width: 900px)").matches;
+    var slabWidth = stage.clientWidth / count;
+    var lean = Math.tan(parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--lean")) * Math.PI / 180) || 0;
+    heroFigures.forEach(function (f) {
+      var tall = Math.min(height * (narrow ? 0.52 : 0.6), height * 0.27 * f.wide * (narrow ? 0.82 : 1) / f.aspect);
+      var wide = tall * f.aspect;
+      var lift = height * f.lift;
+      var across = lean * (lift + tall / 2);
+      f.img.style.width = wide.toFixed(1) + "px";
+      f.img.style.height = tall.toFixed(1) + "px";
+      f.img.style.bottom = lift.toFixed(1) + "px";
+      f.img.style.left = (slabWidth / 2 + across - wide / 2).toFixed(1) + "px";
+      f.img.classList.add("placed");
+    });
+  }
+  if (window.ResizeObserver) { new ResizeObserver(layoutHero).observe($("slabs")); } else { window.addEventListener("resize", layoutHero); }
+
+  var bgRow = el("div", { className: "row bg" });
+  var artRow = el("div", { className: "row" });
+  $("slabs").appendChild(bgRow);
+  $("slabs").appendChild(artRow);
+  data.commanders.forEach(function (c, i) {
+    bgRow.appendChild(el("span", { style: "--c:" + c.colour }));
+    var wide = Math.max(190, Math.min(280, 215 * Math.sqrt((c.w / c.h) / 0.72)));
+    var lifts = [30, 1, 33, 3];
+    var slab = el("a", { className: "slab", href: "#commanders", style: "--i:" + i + ";z-index:" + (i % 2 ? 2 : 1) });
+    slab.setAttribute("aria-label", c.name);
+    var art = el("span", { className: "art" });
+    var figure = el("img", { src: "art/commanders/" + c.id + ".webp", alt: c.name, width: c.w, height: c.h });
+    art.appendChild(figure);
+    heroFigures.push({ img: figure, aspect: c.w / c.h, wide: wide / 100, lift: lifts[i % 4] / 100 });
+    slab.appendChild(art);
+    slab.addEventListener("click", function () { showCommander(i, true); });
+    artRow.appendChild(slab);
+
+    var pick = el("button", { type: "button", style: "--c:" + c.colour, title: c.name });
+    pick.setAttribute("aria-label", c.name);
+    pick.appendChild(el("img", { src: "art/commanders/" + c.id + ".webp", alt: "" }));
+    pick.addEventListener("click", function () { showCommander(i, true); });
+    $("cmd-pick").appendChild(pick);
+  });
+  layoutHero();
+  showCommander(0, false);
+
+  (function () {
+    var section = $("cmd");
+    var stepMs = 4000, quietMs = 10000;
+    var visible = false, lastTouch = 0, lastStep = Date.now();
+    function touched() { lastTouch = Date.now(); }
+    ["pointerdown", "keydown", "focusin", "wheel"].forEach(function (name) { section.addEventListener(name, touched, { passive: true }); });
+    $("slabs").addEventListener("click", touched);
+    if (window.IntersectionObserver) {
+      new IntersectionObserver(function (entries) {
+        visible = entries[entries.length - 1].intersectionRatio >= 0.5;
+        if (visible) { lastStep = Date.now(); }
+      }, { threshold: [0, 0.5] }).observe(section);
+    }
+    setInterval(function () {
+      var now = Date.now();
+      if (!visible || document.hidden || now - lastTouch < quietMs || now - lastStep < stepMs) { return; }
+      lastStep = now;
+      showCommander((current + 1) % data.commanders.length, true);
+    }, 250);
+  })();
+
+  // roster
+  var tierFilter = 0;
+  var units = data.units.slice().sort(function (a, b) { return a.tier - b.tier || a.name.localeCompare(b.name); });
+  var grid = $("roster-grid");
+  var cards = units.map(function (u) {
+    var card = el("article", { className: "unit", style: "--c:" + tierColour[u.tier] });
+    card.title = u.name + ": " + u.alliances.map(function (id) { return allianceById[id] ? allianceById[id].name : id; }).join(", ");
+    card.appendChild(el("span", { className: "tier" }, String(u.tier)));
+    if (u.ace) { card.appendChild(el("span", { className: "ace" }, "ACE")); }
+    card.appendChild(el("img", { src: "art/units/" + u.id + ".webp", alt: "", loading: "lazy", width: u.w, height: u.h }));
+    card.appendChild(el("div", { className: "cap" }, u.name));
+    grid.appendChild(card);
+    return card;
+  });
+  var filters = $("filters");
+  var count = el("span", { className: "count" });
+  function applyTier(tier) {
+    tierFilter = tier;
+    var shown = 0;
+    units.forEach(function (u, i) {
+      var visible = !tier || u.tier === tier;
+      cards[i].hidden = !visible;
+      if (visible) { shown += 1; }
+    });
+    count.textContent = shown + " units";
+    Array.prototype.forEach.call(filters.querySelectorAll("button"), function (button) {
+      button.setAttribute("aria-pressed", String(Number(button.dataset.tier) === tier));
+    });
+  }
+  var all = el("button", { type: "button", className: "chip" }, "All");
+  all.dataset.tier = "0";
+  all.addEventListener("click", function () { applyTier(0); });
+  filters.appendChild(all);
+  data.tiers.forEach(function (t) {
+    var chip = el("button", { type: "button", className: "chip", style: "--c:" + t.colour });
+    chip.dataset.tier = String(t.tier);
+    chip.appendChild(el("span", { className: "pip" }));
+    chip.appendChild(document.createTextNode(t.name));
+    chip.addEventListener("click", function () { applyTier(t.tier); });
+    filters.appendChild(chip);
+  });
+  filters.appendChild(count);
+  applyTier(0);
+
+  // alliances
+  var allyGrid = $("ally-grid");
+  var detail = $("ally-detail");
+  var allyButtons = [];
+  function showAlliance(index) {
+    var a = data.alliances[index];
+    allyButtons.forEach(function (button, i) { button.setAttribute("aria-pressed", String(i === index)); });
+    detail.style.setProperty("--c", a.colour);
+    detail.textContent = "";
+    var left = el("div");
+    left.appendChild(el("h3", null, a.name));
+    left.appendChild(el("p", { className: "steps-row" }, a.kind.toUpperCase() + "  ◆  " + a.steps.join(" · ") + " units"));
+    left.appendChild(el("p", null, a.description));
+    var members = el("div", { className: "ally-members" });
+    units.filter(function (u) { return u.alliances.indexOf(a.id) >= 0; }).forEach(function (u) {
+      var figure = el("figure", { style: "--c:" + tierColour[u.tier] });
+      figure.appendChild(el("img", { src: "art/units/" + u.id + ".webp", alt: "", loading: "lazy" }));
+      figure.appendChild(el("figcaption", null, u.name));
+      members.appendChild(figure);
+    });
+    detail.appendChild(left);
+    detail.appendChild(members);
+  }
+  data.alliances.forEach(function (a, i) {
+    var button = el("button", { type: "button", className: "ally", style: "--c:" + a.colour });
+    if (a.emblem) { button.appendChild(el("img", { src: "art/alliances/" + a.id + ".webp", alt: "", loading: "lazy", width: 44, height: 44 })); }
+    var text = el("span");
+    text.appendChild(el("b", null, a.name));
+    text.appendChild(el("span", null, a.steps.join(" · ")));
+    button.appendChild(text);
+    button.addEventListener("click", function () { showAlliance(i); });
+    allyGrid.appendChild(button);
+    allyButtons.push(button);
+  });
+  showAlliance(0);
+})();
+</script>
+</body>
+</html>
