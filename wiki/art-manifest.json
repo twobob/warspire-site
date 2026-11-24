@@ -787,92 +787,92 @@ null
 ],
 "art-arena-thumbs-courtyard.webp": [
 "Logs/arena/arena_courtyard_clean.png",
-1794690691,
-3476075,
+1795508479,
+3336782,
 480
 ],
 "art-arena-thumbs-crypt.webp": [
 "Logs/arena/arena_crypt_clean.png",
-1794690693,
-3171359,
+1795508482,
+3193031,
 480
 ],
 "art-arena-thumbs-dunes.webp": [
 "Logs/arena/arena_dunes_clean.png",
-1794690692,
-3199598,
+1795508480,
+2911816,
 480
 ],
 "art-arena-thumbs-frost.webp": [
 "Logs/arena/arena_frost_clean.png",
-1794690693,
-3016369,
+1795508481,
+2736273,
 480
 ],
 "art-arena-thumbs-glade.webp": [
 "Logs/arena/arena_glade_clean.png",
-1794690692,
-3534426,
+1795508480,
+3452770,
 480
 ],
 "art-arena-tops-courtyard.webp": [
 "Logs/arena/arena_courtyard_top.png",
-1794690691,
-1454617,
+1795508479,
+1414491,
 1200
 ],
 "art-arena-tops-crypt.webp": [
 "Logs/arena/arena_crypt_top.png",
-1794690694,
-1113025,
+1795508482,
+1220562,
 1200
 ],
 "art-arena-tops-dunes.webp": [
 "Logs/arena/arena_dunes_top.png",
-1794690693,
-1315929,
+1795508481,
+1238512,
 1200
 ],
 "art-arena-tops-frost.webp": [
 "Logs/arena/arena_frost_top.png",
-1794690693,
-1333687,
+1795508481,
+1208646,
 1200
 ],
 "art-arena-tops-glade.webp": [
 "Logs/arena/arena_glade_top.png",
-1794690692,
-1696159,
+1795508480,
+1738962,
 1200
 ],
 "art-arenas-courtyard.webp": [
 "Logs/arena/arena_courtyard_clean.png",
-1794690691,
-3476075,
+1795508479,
+3336782,
 1600
 ],
 "art-arenas-crypt.webp": [
 "Logs/arena/arena_crypt_clean.png",
-1794690693,
-3171359,
+1795508482,
+3193031,
 1600
 ],
 "art-arenas-dunes.webp": [
 "Logs/arena/arena_dunes_clean.png",
-1794690692,
-3199598,
+1795508480,
+2911816,
 1600
 ],
 "art-arenas-frost.webp": [
 "Logs/arena/arena_frost_clean.png",
-1794690693,
-3016369,
+1795508481,
+2736273,
 1600
 ],
 "art-arenas-glade.webp": [
 "Logs/arena/arena_glade_clean.png",
-1794690692,
-3534426,
+1795508480,
+3452770,
 1600
 ],
 "art-commanders-cmd_brugg_ironjaw.webp": [
@@ -949,8 +949,8 @@ null
 ],
 "art-heads-bog_hexer.webp": [
 "Assets/Warspire/Resources/WarspireArt/Portraits/Head/bog_hexer.png",
-1794123351,
-98095,
+1795518794,
+94754,
 160
 ],
 "art-heads-bramble_golem.webp": [
@@ -1009,8 +1009,8 @@ null
 ],
 "art-heads-clockwork_savant.webp": [
 "Assets/Warspire/Resources/WarspireArt/Portraits/Head/clockwork_savant.png",
-1794123357,
-92338,
+1795531555,
+78401,
 160
 ],
 "art-heads-cog_sapper.webp": [
@@ -1045,8 +1045,8 @@ null
 ],
 "art-heads-drowned_wailer.webp": [
 "Assets/Warspire/Resources/WarspireArt/Portraits/Head/drowned_wailer.png",
-1794123354,
-83857,
+1795531554,
+77047,
 160
 ],
 "art-heads-duskguard.webp": [
@@ -1075,8 +1075,8 @@ null
 ],
 "art-heads-fen_mystic.webp": [
 "Assets/Warspire/Resources/WarspireArt/Portraits/Head/fen_mystic.png",
-1794123357,
-93211,
+1795518798,
+89745,
 160
 ],
 "art-heads-gargoyle_gunner.webp": [
@@ -1099,8 +1099,8 @@ null
 ],
 "art-heads-grave_archer.webp": [
 "Assets/Warspire/Resources/WarspireArt/Portraits/Head/grave_archer.png",
-1794123351,
-77851,
+1795518795,
+79338,
 160
 ],
 "art-heads-grave_marker.webp": [
@@ -1141,8 +1141,8 @@ null
 ],
 "art-heads-hollow_singer.webp": [
 "Assets/Warspire/Resources/WarspireArt/Portraits/Head/hollow_singer.png",
-1794123356,
-77209,
+1795518798,
+81069,
 160
 ],
 "art-heads-hollow_strider.webp": [
@@ -1153,8 +1153,8 @@ null
 ],
 "art-heads-hourblade.webp": [
 "Assets/Warspire/Resources/WarspireArt/Portraits/Head/hourblade.png",
-1794123362,
-71389,
+1795520699,
+70946,
 160
 ],
 "art-heads-jade_drakeling.webp": [
@@ -1165,8 +1165,8 @@ null
 ],
 "art-heads-marsh_hag.webp": [
 "Assets/Warspire/Resources/WarspireArt/Portraits/Head/marsh_hag.png",
-1794123354,
-81809,
+1795531553,
+74917,
 160
 ],
 "art-heads-mending_totem.webp": [
@@ -1225,8 +1225,8 @@ null
 ],
 "art-heads-pact_archer.webp": [
 "Assets/Warspire/Resources/WarspireArt/Portraits/Head/pact_archer.png",
-1794123365,
-77317,
+1795518802,
+78255,
 160
 ],
 "art-heads-pact_bruiser.webp": [
@@ -1255,8 +1255,8 @@ null
 ],
 "art-heads-plague_cantor.webp": [
 "Assets/Warspire/Resources/WarspireArt/Portraits/Head/plague_cantor.png",
-1794123359,
-84769,
+1795518800,
+82783,
 160
 ],
 "art-heads-practice_dummy.webp": [
@@ -1327,8 +1327,8 @@ null
 ],
 "art-heads-soul_tyrant.webp": [
 "Assets/Warspire/Resources/WarspireArt/Portraits/Head/soul_tyrant.png",
-1794123362,
-82533,
+1795518801,
+80499,
 160
 ],
 "art-heads-spiked_palisade.webp": [
@@ -1339,8 +1339,8 @@ null
 ],
 "art-heads-spire_acolyte.webp": [
 "Assets/Warspire/Resources/WarspireArt/Portraits/Head/spire_acolyte.png",
-1794123351,
-79425,
+1795518794,
+82984,
 160
 ],
 "art-heads-spire_bear.webp": [
@@ -1363,8 +1363,8 @@ null
 ],
 "art-heads-spire_marksman.webp": [
 "Assets/Warspire/Resources/WarspireArt/Portraits/Head/spire_marksman.png",
-1794123357,
-103947,
+1795518799,
+93807,
 160
 ],
 "art-heads-storm_augur.webp": [
@@ -1387,8 +1387,8 @@ null
 ],
 "art-heads-thorn_caller.webp": [
 "Assets/Warspire/Resources/WarspireArt/Portraits/Head/thorn_caller.png",
-1794123355,
-73367,
+1795531555,
+68002,
 160
 ],
 "art-heads-thorn_hound.webp": [
@@ -1411,8 +1411,8 @@ null
 ],
 "art-heads-thornwood_seer.webp": [
 "Assets/Warspire/Resources/WarspireArt/Portraits/Head/thornwood_seer.png",
-1794123352,
-79354,
+1795531553,
+73846,
 160
 ],
 "art-heads-tidal_stalker.webp": [
@@ -1423,8 +1423,8 @@ null
 ],
 "art-heads-veiled_seer.webp": [
 "Assets/Warspire/Resources/WarspireArt/Portraits/Head/veiled_seer.png",
-1794123359,
-88431,
+1795531556,
+81686,
 160
 ],
 "art-items-abyssal_emblem.webp": [
@@ -2323,8 +2323,8 @@ null
 ],
 "art-units-hourblade.webp": [
 "Assets/Warspire/Resources/WarspireArt/Portraits/Full/hourblade.png",
-1794123361,
-82031,
+1795520699,
+87729,
 null
 ],
 "art-units-mire_king.webp": [
@@ -2335,8 +2335,8 @@ null
 ],
 "art-units-soul_tyrant.webp": [
 "Assets/Warspire/Resources/WarspireArt/Portraits/Full/soul_tyrant.png",
-1794123362,
-87586,
+1795518801,
+84885,
 null
 ],
 "art-units-spire_colossus.webp": [
